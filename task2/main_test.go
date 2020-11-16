@@ -83,7 +83,7 @@ func BenchmarkRemove(b *testing.B) {
 }
 func BenchmarkSort(b *testing.B) {
 	rand.Seed(1)
-	var data []int = []int{0, 123, 234, 11, 234, 98, 0, 1234, 123, 23, 234, 6, 2, 4, 5, 6, 2, 1}
+	data := make([]int, 0, 1000)
 	for i := 0; i < b.N; i++ {
 		sort(data)
 	}
