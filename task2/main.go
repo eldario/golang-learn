@@ -25,13 +25,21 @@ func main() {
 	fmt.Println("Sorted data", data)
 }
 
+
+/**
+ * Add a value in array.
+ */
 func insert(data []int, value int) []int {
 	if value >= 0 {
 		return append(data, value)
 	}
+
 	return data
 }
 
+/**
+ * Remove a value from array.
+ */
 func remove(data []int, value int) []int {
 	if value < 0 {
 		for key, v := range data {
@@ -46,6 +54,9 @@ func remove(data []int, value int) []int {
 	return data
 }
 
+/**
+ * Sort an array.
+ */
 func sort(data []int) []int {
 	for i := 0; i < len(data); i++ {
 		for j := i; j < len(data); j++ {
