@@ -19,14 +19,14 @@ type testSortCase struct {
 
 func TestInsert(t *testing.T) {
 	cases := []testCase{
-		{[]int{1, 2}, -1, []int{1, 2}},
-		{[]int{0, 1}, -1, []int{0, 1}},
-		{[]int{}, -1, []int{}},
-		{[]int{10, 4, 3, 9}, -1, []int{10, 4, 3, 9}},
-		{[]int{10, 4, 3, 1}, -1, []int{10, 4, 3, 1}},
+		{[]int{1, 2}, 3, []int{1, 2, 3}},
+		{[]int{0, 1}, 12, []int{0, 1, 12}},
+		{[]int{}, 1, []int{1}},
+		{[]int{10, 4, 3, 9}, 1, []int{10, 4, 3, 9, 1}},
+		{[]int{10, 4, 3, 1}, 21, []int{10, 4, 3, 1, 21}},
 	}
 	for _, c := range cases {
-		got := insert(c.array, c.value)
+		got := insert(&c.array, c.value)
 		if !isSame(c.result, got) {
 			t.Fail()
 		}
@@ -35,11 +35,11 @@ func TestInsert(t *testing.T) {
 
 func TestRemove(t *testing.T) {
 	cases := []testCase{
-		{[]int{1, 2}, -1, []int{2}},
-		{[]int{0, 1}, -5, []int{0, 1}},
+		{[]int{1, 2}, 1, []int{2}},
+		{[]int{0, 1}, 5, []int{0, 1}},
 		{[]int{}, 1, []int{}},
-		{[]int{10, 4, 3, 9, 1}, -1, []int{10, 4, 3, 9}},
-		{[]int{10, 4, 3, 1}, -2, []int{10, 4, 3, 1}},
+		{[]int{10, 4, 3, 9, 1}, 1, []int{10, 4, 3, 9}},
+		{[]int{10, 4, 3, 1}, 2, []int{10, 4, 3, 1}},
 	}
 	for _, c := range cases {
 		got := remove(c.array, c.value)
@@ -68,11 +68,15 @@ func TestSort(t *testing.T) {
 func BenchmarkInsert(b *testing.B) {
 	rand.Seed(1)
 	var data []int
-	x := rand.Intn(100)
-	for i := 0; i < b.N; i++ {
-		insert(data, x)
+	x := rand.Intn(10)
+	i := 0
+	for ; i < b.N; i++ {
+		insert(&data, x*i)
 	}
+	// 10000 times for repeat
+	// fmt.Println(data, i)
 }
+
 func BenchmarkRemove(b *testing.B) {
 	rand.Seed(1)
 	var data []int
@@ -81,6 +85,7 @@ func BenchmarkRemove(b *testing.B) {
 		remove(data, x)
 	}
 }
+
 func BenchmarkSort(b *testing.B) {
 	rand.Seed(1)
 	data := make([]int, 0, 1000)

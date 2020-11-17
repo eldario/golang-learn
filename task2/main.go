@@ -17,37 +17,33 @@ func main() {
 
 	for i := 0; i < number; i++ {
 		fmt.Scan(&value)
-		data = insert(data, value)
-		data = remove(data, value)
-		data = sort(data)
+		if value > 0 {
+			insert(&data, value)
+		} else {
+			data = remove(data, -value)
+		}
 	}
 
 	fmt.Println("Sorted data", data)
 }
 
-
 /**
  * Add a value in array.
  */
-func insert(data []int, value int) []int {
-	if value >= 0 {
-		return append(data, value)
-	}
+func insert(data *[]int, value int) []int {
+	*data = append(*data, value)
 
-	return data
+	return *data
 }
 
 /**
  * Remove a value from array.
  */
 func remove(data []int, value int) []int {
-	if value < 0 {
-		for key, v := range data {
-			if (v + value) == 0 {
-				copy(data[key:], data[key+1:])
-				data[len(data)-1] = 666
-				data = data[:len(data)-1]
-			}
+	for key, v := range data {
+		if v == value {
+			copy(data[key:], data[key+1:])
+			data = data[:len(data)-1]
 		}
 	}
 
