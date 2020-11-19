@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 )
 
 type SortedArray struct {
@@ -29,6 +30,7 @@ func main() {
 	}
 
 	fmt.Println("Sorted data", data.Sort())
+	fmt.Printf("Max value is %d and min value is %d", data.GetMax(), data.GetMin())
 }
 
 /**
@@ -63,4 +65,32 @@ func (data *SortedArray) Sort() []int {
 	}
 
 	return data.array
+}
+
+/**
+ * Get max value from array.
+ */
+func (data *SortedArray) GetMax() int {
+	var max int
+	for _, number := range data.array {
+		if number > max {
+			max = number
+		}
+	}
+
+	return max
+}
+
+/**
+ * Get minimal values from array.
+ */
+func (data *SortedArray) GetMin() int {
+	var min = math.MaxInt64
+	for _, number := range data.array {
+		if number < min {
+			min = number
+		}
+	}
+
+	return min
 }

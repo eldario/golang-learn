@@ -17,6 +17,11 @@ type testSortCase struct {
 	result []int
 }
 
+type testMaxMinCase struct {
+	array  []int
+	result int
+}
+
 func TestInsert(t *testing.T) {
 	cases := []testCase{
 		{[]int{1, 2}, 3, []int{1, 2, 3}},
@@ -67,6 +72,38 @@ func TestSort(t *testing.T) {
 	}
 }
 
+func TestGetMin(t *testing.T) {
+	cases := []testMaxMinCase{
+		{[]int{2, 3, 4, 5, 6, 7, 8, 9}, 2},
+		{[]int{12, 2, 4, 5, 1, 4, 6, 9, 5}, 1},
+		{[]int{9, 6, 5, 4, 8, 6, 5, 7, 6, 5}, 4},
+		{[]int{3, 1, 2, 5, 6, 4, 8, 9}, 1},
+		{[]int{6, 4, 9, 8, 9, 8, 5, 3, 7, 4}, 3},
+	}
+	for _, c := range cases {
+		data := SortedArray{c.array}
+		if c.result != data.GetMin() {
+			t.Fail()
+		}
+	}
+}
+
+func TestGetMax(t *testing.T) {
+	cases := []testMaxMinCase{
+		{[]int{2, 3, 4, 5, 6, 7, 8, 9}, 9},
+		{[]int{12, 2, 4, 5, 1, 4, 6, 9, 5}, 12},
+		{[]int{9, 6, 5, 14, 8, 6, 5, 72, 6, 5}, 72},
+		{[]int{32, 1, 2, 50, 6, 44, 8, 19}, 50},
+		{[]int{6, 4, 49, 8, 9, 82, 5, 3, 72, 4}, 82},
+	}
+	for _, c := range cases {
+		data := SortedArray{c.array}
+		if c.result != data.GetMax() {
+			t.Fail()
+		}
+	}
+}
+
 func BenchmarkInsert(b *testing.B) {
 	rand.Seed(1)
 	var data = new(SortedArray)
@@ -93,6 +130,21 @@ func BenchmarkSort(b *testing.B) {
 	var data = SortedArray{make([]int, 0, 1000)}
 	for i := 0; i < b.N; i++ {
 		data.Sort()
+	}
+}
+
+func BenchmarkGetMax(b *testing.B) {
+	rand.Seed(1)
+	var data = SortedArray{make([]int, 0, 1000)}
+	for i := 0; i < b.N; i++ {
+		data.GetMax()
+	}
+}
+func BenchmarkGetMin(b *testing.B) {
+	rand.Seed(1)
+	var data = SortedArray{make([]int, 0, 1000)}
+	for i := 0; i < b.N; i++ {
+		data.GetMin()
 	}
 }
 
