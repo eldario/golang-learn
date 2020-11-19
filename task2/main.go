@@ -4,9 +4,13 @@ import (
 	"fmt"
 )
 
+type SortedArray struct {
+	array []int
+}
+
 func main() {
 	var (
-		data []int
+		data = new(SortedArray)
 		value,
 		number int
 	)
@@ -18,49 +22,45 @@ func main() {
 	for i := 0; i < number; i++ {
 		fmt.Scan(&value)
 		if value > 0 {
-			insert(&data, value)
+			data.Insert(value)
 		} else {
-			data = remove(data, -value)
+			data.Remove(-value)
 		}
 	}
 
-	fmt.Println("Sorted data", data)
+	fmt.Println("Sorted data", data.Sort())
 }
 
 /**
  * Add a value in array.
  */
-func insert(data *[]int, value int) []int {
-	*data = append(*data, value)
-
-	return *data
+func (data *SortedArray) Insert(value int) {
+	data.array = append(data.array, value)
 }
 
 /**
  * Remove a value from array.
  */
-func remove(data []int, value int) []int {
-	for key, v := range data {
+func (data *SortedArray) Remove(value int) {
+	for key, v := range data.array {
 		if v == value {
-			copy(data[key:], data[key+1:])
-			data = data[:len(data)-1]
+			copy(data.array[key:], data.array[key+1:])
+			data.array = data.array[:len(data.array)-1]
 		}
 	}
-
-	return data
 }
 
 /**
  * Sort an array.
  */
-func sort(data []int) []int {
-	for i := 0; i < len(data); i++ {
-		for j := i; j < len(data); j++ {
-			if data[i] > data[j] {
-				data[i], data[j] = data[j], data[i]
+func (data *SortedArray) Sort() []int {
+	for i := 0; i < len(data.array); i++ {
+		for j := i; j < len(data.array); j++ {
+			if data.array[i] > data.array[j] {
+				data.array[i], data.array[j] = data.array[j], data.array[i]
 			}
 		}
 	}
 
-	return data
+	return data.array
 }

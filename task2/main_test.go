@@ -26,8 +26,9 @@ func TestInsert(t *testing.T) {
 		{[]int{10, 4, 3, 1}, 21, []int{10, 4, 3, 1, 21}},
 	}
 	for _, c := range cases {
-		got := insert(&c.array, c.value)
-		if !isSame(c.result, got) {
+		data := SortedArray{c.array}
+		data.Insert(c.value)
+		if !isSame(c.result, data.array) {
 			t.Fail()
 		}
 	}
@@ -42,8 +43,9 @@ func TestRemove(t *testing.T) {
 		{[]int{10, 4, 3, 1}, 2, []int{10, 4, 3, 1}},
 	}
 	for _, c := range cases {
-		got := remove(c.array, c.value)
-		if !isSame(c.result, got) {
+		data := SortedArray{c.array}
+		data.Remove(c.value)
+		if !isSame(c.result, data.array) {
 			t.Fail()
 		}
 	}
@@ -58,8 +60,8 @@ func TestSort(t *testing.T) {
 		{[]int{10, 4, 9, 2, 3, 1}, []int{1, 2, 3, 4, 9, 10}},
 	}
 	for _, c := range cases {
-		got := sort(c.array)
-		if !isSame(c.result, got) {
+		data := SortedArray{c.array}
+		if !isSame(c.result, data.Sort()) {
 			t.Fail()
 		}
 	}
@@ -67,11 +69,11 @@ func TestSort(t *testing.T) {
 
 func BenchmarkInsert(b *testing.B) {
 	rand.Seed(1)
-	var data []int
+	var data = new(SortedArray)
 	x := rand.Intn(10)
 	i := 0
 	for ; i < b.N; i++ {
-		insert(&data, x*i)
+		data.Insert(x * i)
 	}
 	// 10000 times for repeat
 	// fmt.Println(data, i)
@@ -79,18 +81,18 @@ func BenchmarkInsert(b *testing.B) {
 
 func BenchmarkRemove(b *testing.B) {
 	rand.Seed(1)
-	var data []int
+	var data = new(SortedArray)
 	x := rand.Intn(100)
 	for i := 0; i < b.N; i++ {
-		remove(data, x)
+		data.Remove(x)
 	}
 }
 
 func BenchmarkSort(b *testing.B) {
 	rand.Seed(1)
-	data := make([]int, 0, 1000)
+	var data = SortedArray{make([]int, 0, 1000)}
 	for i := 0; i < b.N; i++ {
-		sort(data)
+		data.Sort()
 	}
 }
 
