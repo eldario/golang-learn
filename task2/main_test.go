@@ -79,6 +79,7 @@ func TestGetMin(t *testing.T) {
 		{[]int{9, 6, 5, 4, 8, 6, 5, 7, 6, 5}, 4},
 		{[]int{3, 1, 2, 5, 6, 4, 8, 9}, 1},
 		{[]int{6, 4, 9, 8, 9, 8, 5, 3, 7, 4}, 3},
+		{[]int{}, 0},
 	}
 	for _, c := range cases {
 		data := SortedArray{c.array}
@@ -95,6 +96,7 @@ func TestGetMax(t *testing.T) {
 		{[]int{9, 6, 5, 14, 8, 6, 5, 72, 6, 5}, 72},
 		{[]int{32, 1, 2, 50, 6, 44, 8, 19}, 50},
 		{[]int{6, 4, 49, 8, 9, 82, 5, 3, 72, 4}, 82},
+		{[]int{}, 0},
 	}
 	for _, c := range cases {
 		data := SortedArray{c.array}
