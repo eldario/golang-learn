@@ -1,7 +1,6 @@
-package main
+package sorter
 
 import (
-	"fmt"
 	"math/rand"
 	"testing"
 )
@@ -31,9 +30,9 @@ func TestInsert(t *testing.T) {
 		{[]int{10, 4, 3, 1}, 21, []int{10, 4, 3, 1, 21}},
 	}
 	for _, c := range cases {
-		data := SortedArray{c.array}
+		data := New()
 		data.Insert(c.value)
-		if !isSame(c.result, data.array) {
+		if !data.Equals(c.result) {
 			t.Fail()
 		}
 	}
@@ -48,9 +47,9 @@ func TestRemove(t *testing.T) {
 		{[]int{10, 4, 3, 1}, 2, []int{10, 4, 3, 1}},
 	}
 	for _, c := range cases {
-		data := SortedArray{c.array}
+		data := New()
 		data.Remove(c.value)
-		if !isSame(c.result, data.array) {
+		if !data.Equals(c.result) {
 			t.Fail()
 		}
 	}
@@ -66,7 +65,7 @@ func TestSort(t *testing.T) {
 	}
 	for _, c := range cases {
 		data := SortedArray{c.array}
-		if !isSame(c.result, data.Sort()) {
+		if !data.Equals(c.result) {
 			t.Fail()
 		}
 	}
@@ -131,7 +130,7 @@ func BenchmarkSort(b *testing.B) {
 	rand.Seed(1)
 	var data = SortedArray{make([]int, 0, 1000)}
 	for i := 0; i < b.N; i++ {
-		data.Sort()
+		data.GetItems()
 	}
 }
 
@@ -148,19 +147,4 @@ func BenchmarkGetMin(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		data.GetMin()
 	}
-}
-
-func isSame(expected []int, actual []int) bool {
-	if len(expected) != len(actual) {
-		fmt.Print(expected, actual)
-		return false
-	}
-	for key, value := range expected {
-		if value != actual[key] {
-
-			return false
-		}
-	}
-
-	return true
 }

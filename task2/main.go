@@ -1,16 +1,31 @@
 package main
 
 import (
+	"./pkg/list"
+	"./pkg/sorter"
 	"fmt"
 )
 
-type SortedArray struct {
-	array []int
+func main() {
+	var choice string
+
+	fmt.Printf("\rWhich package u want to use type `sorter` or `list`?")
+	var _, err = fmt.Scan(&choice)
+
+	if err != nil {
+		fmt.Println("Wasted")
+	}
+
+	if choice == "list" {
+		witList()
+	} else {
+		withSorter()
+	}
 }
 
-func main() {
+func withSorter() {
 	var (
-		data = new(SortedArray)
+		data = sorter.New()
 		value,
 		number int
 	)
@@ -23,69 +38,37 @@ func main() {
 		fmt.Scan(&value)
 		if value > 0 {
 			data.Insert(value)
-		} else {
-			data.Remove(-value)
+			continue
 		}
+
+		data.Remove(-value)
 	}
 
-	fmt.Println("Sorted data", data.Sort())
+	fmt.Println("Sorted data", data.GetItems())
 	fmt.Printf("Max value is %d and min value is %d", data.GetMax(), data.GetMin())
 }
 
-/**
- * Add a value in array.
- */
-func (data *SortedArray) Insert(value int) {
-	data.array = append(data.array, value)
-}
+func witList() {
+	var (
+		data = list.New()
+		value,
+		number int
+	)
 
-/**
- * Remove a value from array.
- */
-func (data *SortedArray) Remove(value int) {
-	for key, v := range data.array {
-		if v == value {
-			copy(data.array[key:], data.array[key+1:])
-			data.array = data.array[:len(data.array)-1]
+	fmt.Printf("\r How many objects do we have? ")
+
+	fmt.Scan(&number)
+
+	for i := 0; i < number; i++ {
+		fmt.Scan(&value)
+		if value > 0 {
+			data.Insert(value)
+			continue
 		}
-	}
-}
 
-/**
- * Sort an array.
- */
-func (data *SortedArray) Sort() []int {
-	for i := 0; i < len(data.array); i++ {
-		for j := i; j < len(data.array); j++ {
-			if data.array[i] > data.array[j] {
-				data.array[i], data.array[j] = data.array[j], data.array[i]
-			}
-		}
+		data.Remove(-value)
 	}
 
-	return data.array
-}
-
-/**
- * Get max value from array.
- */
-func (data *SortedArray) GetMax() int {
-	var count = len(data.array)
-	if count == 0 {
-		return 0		
-	}
-	
-	return data.array[count-1]
-}
-
-/**
- * Get minimal values from array.
- */
-func (data *SortedArray) GetMin() int {
-	var count = len(data.array)
-	if count == 0 {
-		return 0		
-	}
-
-	return data.array[0]
+	fmt.Println("Sorted data", data.GetItems())
+	fmt.Printf("Max value is %d and min value is %d", data.GetMax(), data.GetMin())
 }
