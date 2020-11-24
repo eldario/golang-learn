@@ -1,12 +1,31 @@
 package main
 
 import (
+	"./pkg/list"
+	"./pkg/sorter"
 	"fmt"
 )
 
 func main() {
+	var choice string
+
+	fmt.Printf("\rWhich package u want to use type `sorter` or `list`?")
+	var _, err = fmt.Scan(&choice)
+
+	if err != nil {
+		fmt.Println("Wasted")
+	}
+
+	if choice == "list" {
+		witList()
+	} else {
+		withSorter()
+	}
+}
+
+func withSorter() {
 	var (
-		data []int
+		data = sorter.New()
 		value,
 		number int
 	)
@@ -18,49 +37,38 @@ func main() {
 	for i := 0; i < number; i++ {
 		fmt.Scan(&value)
 		if value > 0 {
-			insert(&data, value)
-		} else {
-			data = remove(data, -value)
+			data.Insert(value)
+			continue
 		}
+
+		data.Remove(-value)
 	}
 
-	fmt.Println("Sorted data", data)
+	fmt.Println("Sorted data", data.GetItems())
+	fmt.Printf("Max value is %d and min value is %d", data.GetMax(), data.GetMin())
 }
 
-/**
- * Add a value in array.
- */
-func insert(data *[]int, value int) []int {
-	*data = append(*data, value)
+func witList() {
+	var (
+		data = list.New()
+		value,
+		number int
+	)
 
-	return *data
-}
+	fmt.Printf("\r How many objects do we have? ")
 
-/**
- * Remove a value from array.
- */
-func remove(data []int, value int) []int {
-	for key, v := range data {
-		if v == value {
-			copy(data[key:], data[key+1:])
-			data = data[:len(data)-1]
+	fmt.Scan(&number)
+
+	for i := 0; i < number; i++ {
+		fmt.Scan(&value)
+		if value > 0 {
+			data.Insert(value)
+			continue
 		}
+
+		data.Remove(-value)
 	}
 
-	return data
-}
-
-/**
- * Sort an array.
- */
-func sort(data []int) []int {
-	for i := 0; i < len(data); i++ {
-		for j := i; j < len(data); j++ {
-			if data[i] > data[j] {
-				data[i], data[j] = data[j], data[i]
-			}
-		}
-	}
-
-	return data
+	fmt.Println("Sorted data", data.GetItems())
+	fmt.Printf("Max value is %d and min value is %d", data.GetMax(), data.GetMin())
 }
