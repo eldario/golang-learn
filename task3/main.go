@@ -1,8 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"os"
 	"sort"
+	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 type SortedMap struct {
@@ -54,7 +60,7 @@ func (s *SortedMap) clear(word string) {
 			if word == value {
 				copy(words[index:], words[index+1:])
 				s.words[count] = words[:len(words)-1]
-				if len(words) == 0 {
+				if len(s.words[count]) == 0 {
 					delete(s.words, count)
 				}
 				break
@@ -84,7 +90,6 @@ func (s *SortedMap) GetFrequentUses() []string {
 			}
 		}
 	}
-
 	return values
 }
 
@@ -145,15 +150,47 @@ func (v sortDesc) Less(i, j int) bool {
  * Handle method.
  */
 func main() {
+	file, err := os.Open("./task3/files/some_text.txt")
+	if err != nil {
+		fmt.Println("Panic")
+		return
+	}
+
+	defer file.Close()
+
+	fmt.Println(GetWords(file))
+
+	return
+
+}
+
+func GetWords(file io.Reader) []string {
 	someList := New()
 
-	text := "o  a b c d e f  h i  a b c d e f  h i  a a z z z x h g g g o o o"
+	s := bufio.NewScanner(file)
 
-	for _, word := range []rune(text) {
-		if word != ' ' {
-			someList.Insert(string(word))
+	for s.Scan() { // возвращает true, пока файл не будет прочитан до конца
+		line := strings.Replace(strings.TrimSpace(s.Text()), ",", "", -1)
+		if line == "" {
+			continue
+		}
+		words := strings.Split(line, " ")
+		for _, word := range words {
+			if utf8.RuneCountInString(word) < 3 { // if length word less than 3 symbols
+				continue
+			}
+
+			if unicode.IsUpper(rune(word[0])) {
+				continue
+			}
+
+			if strings.HasPrefix(word, ".") {
+				continue
+			}
+
+			someList.Insert(word)
 		}
 	}
 
-	fmt.Println(someList.GetFrequentUses()) //[o a b c d e f h z g]
+	return someList.GetFrequentUses()
 }
