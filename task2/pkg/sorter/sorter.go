@@ -1,7 +1,5 @@
 package sorter
 
-import "fmt"
-
 type SortedArray struct {
 	array []int
 }
@@ -75,7 +73,6 @@ func (data *SortedArray) GetMin() int {
  */
 func (data *SortedArray) Equals(actual []int) bool {
 	if len(data.array) != len(actual) {
-		fmt.Print(data.array, actual)
 		return false
 	}
 	for key, value := range data.array {
