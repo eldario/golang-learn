@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -159,11 +160,11 @@ func main() {
 	defer file.Close()
 
 	fmt.Println(GetWords(file))
-
-	return
-
 }
 
+/**
+ * Work with all word from Reader.
+ */
 func GetWords(file io.Reader) []string {
 	someList := New()
 
@@ -176,21 +177,34 @@ func GetWords(file io.Reader) []string {
 		}
 		words := strings.Split(line, " ")
 		for _, word := range words {
-			if utf8.RuneCountInString(word) < 3 { // if length word less than 3 symbols
-				continue
+			if isWordValid(word) {
+				someList.Insert(word)
 			}
-
-			if unicode.IsUpper(rune(word[0])) {
-				continue
-			}
-
-			if strings.HasPrefix(word, ".") {
-				continue
-			}
-
-			someList.Insert(word)
 		}
 	}
 
 	return someList.GetFrequentUses()
+}
+
+/**
+ * Small validation for given word.
+ */
+func isWordValid(word string) bool {
+	if utf8.RuneCountInString(word) < 4 { // if length word less than 3 symbols
+		return false
+	}
+
+	if unicode.IsUpper(rune(word[0])) {
+		return false
+	}
+
+	if strings.HasSuffix(word, ".") {
+		return false
+	}
+
+	if _, err := strconv.ParseInt(word, 10, 64); err == nil {
+		return false
+	}
+
+	return true
 }
