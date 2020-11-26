@@ -11,7 +11,11 @@ build: ### Build
 	go build .
 
 test: ### Run tests
-	go test ./pkg/hardMapper
+	go test ./pkg
 
 bench: ### Bench tests
 	go test -bench=. ./pkg/hardMapper
+	go test -bench=. ./pkg/simpleMapper
+
+lint: ## Lint
+	 golangci-lint run

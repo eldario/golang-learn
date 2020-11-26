@@ -1,4 +1,4 @@
-package hardMapper
+package simpleMapper
 
 import (
 	"math/rand"

@@ -1,92 +1,65 @@
 package main
 
 import (
-	"bufio"
+	"flag"
 	"fmt"
-	"io"
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
 	"os"
-	"regexp"
-	"strconv"
 	"strings"
-	"tasks/task3/pkg/hardMapper"
-	"unicode/utf8"
+	"tasks/task3/pkg/reader"
 )
 
 /**
  * Handle method.
  */
 func main() {
-	file, err := os.Open("./task3/files/some_text.txt")
+	// Get parsed flags
+	count, filePath, wordLength := parseFlags()
+
+	file, err := os.Open(filePath)
 	if err != nil {
-		fmt.Println("Panic")
+		fmt.Println("Panic", err)
 		return
 	}
 
 	defer file.Close()
 
-	fmt.Println(GetWords(file))
+	fileReader := reader.New(file)
+	fileReader.SetMinWordLength(wordLength)
+
+	printInTable(fileReader.GetWords(count))
+
 }
 
 /**
- * Work with all word from Reader.
+ * Return flags from cli.
  */
-func GetWords(file io.Reader) []string {
-	someList := hardMapper.New()
+func parseFlags() (int, string, int) {
+	count := flag.Int("count", 10, "an int")
+	filePath := flag.String("filepath", "files/some_text.txt", "File name")
+	wordLength := flag.Int("minlength", 3, "File name")
 
-	s := bufio.NewScanner(file)
-	lines := getPreparedLines(s)
-
-	for _, line := range lines {
-		words := strings.Split(line, " ")
-		wordsCount := len(words)
-
-		for index, word := range words {
-			if index == 0 || index == wordsCount-1 || !isWordValid(word) {
-				continue
-			}
-			someList.Insert(word)
-		}
-
-	}
-
-	return someList.GetFrequentUses()
+	flag.Parse()
+	return *count, *filePath, *wordLength
 }
 
 /**
- * Preparing sentences from read lines.
+ * Beauty print.
  */
-func getPreparedLines(s *bufio.Scanner) []string {
-	var lines []string
-	for s.Scan() {
-		line := strings.TrimSpace(regexp.MustCompile("[^a-zA-Z .]+").ReplaceAllString(s.Text(), ""))
+func printInTable(result []string) {
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
 
-		if line == "" {
-			continue
-		}
+	tbl := table.New("ID", "Word", "Count", "Order")
 
-		for _, splitLine := range strings.Split(line, ". ") {
-			if strings.HasSuffix(splitLine, ".") {
-				splitLine = strings.Replace(splitLine, ".", "", 1)
-			}
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
-			lines = append(lines, strings.ToLower(splitLine))
-		}
+	for index, word := range result {
+		words := strings.Split(word, ";")
+
+		tbl.AddRow(index+1, words[0], words[1], words[2])
 	}
 
-	return lines
-}
-
-/**
- * Small validation for given word.
- */
-func isWordValid(word string) bool {
-	if utf8.RuneCountInString(word) < 4 { // if length word less than 3 symbols
-		return false
-	}
-
-	if _, err := strconv.Atoi(word); err == nil {
-		return false
-	}
-
-	return true
+	tbl.Print()
 }

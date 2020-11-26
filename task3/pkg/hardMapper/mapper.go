@@ -94,7 +94,7 @@ func (s *SortedMap) getTopList() map[string]int {
 		values = make(map[string]int)
 	)
 
-	for key, _ := range s.words {
+	for key := range s.words {
 		keys = append(keys, key)
 	}
 

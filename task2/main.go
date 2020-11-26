@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./pkg/list"
-	"./pkg/sorter"
 	"fmt"
+	"tasks/task2/pkg/list"
+	"tasks/task2/pkg/sorter"
 )
 
 func main() {
