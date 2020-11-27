@@ -21,7 +21,7 @@ type WordItem struct {
  * Structure constructor.
  */
 func New() *SortedMap {
-	return &SortedMap{words: make(map[string]int), topCount: 8}
+	return &SortedMap{words: make(map[string]int)}
 }
 
 /**
