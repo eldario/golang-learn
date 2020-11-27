@@ -45,6 +45,15 @@ func (s *SortedMap) Insert(word string) {
 }
 
 /**
+ * Remove word from list.
+ */
+func (s *SortedMap) Remove(word string) {
+	if _, ok := s.words[word]; ok {
+		delete(s.words, word)
+	}
+}
+
+/**
  * Get frequently used words in text.
  */
 func (s *SortedMap) GetFrequentUses() []string {
