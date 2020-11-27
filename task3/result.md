@@ -15,20 +15,37 @@
 ]
 ```
 
-#### Updated results
+#### Updated results without exclude first or last words
 
 ```json
-ID  Word      Count  Order
-1   were      92     10
-2   that      126    13
-3   from      68     23
-4   with      128    25
-5   scarlett  146    31
-6   about     59     60
-7   said      200    69
-8   going     51     73
-9   melanie   63     124
-10  went      62     145   
+ID  Word    Count  Order  
+1   that    36     13     
+2   from    58     23     
+3   like    35     58     
+4   told    29     78     
+5   looked  39     92     
+6   went    62     146    
+7   love    32     188    
+8   want    29     196    
+9   into    29     204    
+10  down    28     207    
+
+```
+
+#### Update result with exclude list
+
+```json
+ID  Word    Count  Order  
+1   that    37     17     
+2   from    59     27     
+3   like    35     65     
+4   told    29     92     
+5   looked  39     111    
+6   went    62     177    
+7   love    32     235    
+8   want    29     248    
+9   into    29     256    
+10  down    29     259 
 ```
 
 #### Benchmarks

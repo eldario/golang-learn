@@ -36,14 +36,15 @@ func (t *TextStructure) GetWords(count int) []string {
 		wordsCount := len(words)
 
 		for index, word := range words {
-			if index == 0 || !t.isWordValid(word) {
+			// Remove word if it at the end of sentence
+			if index == 0 || index == wordsCount-1 {
+				t.UpdateExcludeList(word)
+				someList.Remove(word)
 				continue
 			}
 
-			// Remove word if it at the end of sentence
-			if index == wordsCount-1 {
-				t.UpdateExcludeList(word)
-				someList.Remove(word)
+			if !t.isWordValid(word) {
+				continue
 			}
 
 			someList.Insert(word)
