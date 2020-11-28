@@ -25,8 +25,7 @@ func main() {
 
 	defer file.Close()
 
-	fileReader := reader.New(file)
-	fileReader.SetMinWordLength(wordLength)
+	fileReader := reader.New(file).SetMinWordLength(wordLength)
 
 	printInTable(fileReader.GetWords(count))
 

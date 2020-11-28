@@ -6,9 +6,10 @@ import (
 )
 
 type SortedMap struct {
-	items    []string
-	words    map[string]int
-	topCount int
+	items        []string
+	words        map[string]int
+	topCount     int
+	excludeWords map[string]int
 }
 
 type WordItem struct {
@@ -21,7 +22,7 @@ type WordItem struct {
  * Structure constructor.
  */
 func New() *SortedMap {
-	return &SortedMap{words: make(map[string]int)}
+	return &SortedMap{words: make(map[string]int), excludeWords: make(map[string]int)}
 }
 
 /**
@@ -45,12 +46,22 @@ func (s *SortedMap) Insert(word string) {
 }
 
 /**
- * Remove word from list.
+ * Update exclude list with words.
  */
-func (s *SortedMap) Remove(word string) {
-	if _, ok := s.words[word]; ok {
-		delete(s.words, word)
+func (s *SortedMap) UpdateExcludeList(word string) {
+	if _, ok := s.excludeWords[word]; !ok {
+		s.excludeWords[word] = 1
 	}
+	s.remove(word)
+}
+
+/**
+ * Update exclude list with words.
+ */
+func (s *SortedMap) IsWordExcluded(word string) bool {
+	_, ok := s.excludeWords[word]
+
+	return ok
 }
 
 /**
@@ -63,8 +74,9 @@ func (s *SortedMap) GetFrequentUses() []string {
 	)
 
 	for word, count := range s.words {
-		index := Find(s.items, word)
-		sortedResult = append(sortedResult, WordItem{word, count, index})
+		if index := s.find(word); index != -1 {
+			sortedResult = append(sortedResult, WordItem{word, count, index})
+		}
 	}
 
 	sort.Slice(sortedResult, func(i, j int) bool {
@@ -93,11 +105,23 @@ func (s *SortedMap) GetFrequentUses() []string {
 	return result
 }
 
-func Find(words []string, word string) int {
-	for i, n := range words {
+/**
+ * Find word in words list.
+ */
+func (s *SortedMap) find(word string) int {
+	for i, n := range s.items {
 		if word == n {
 			return i
 		}
 	}
-	return len(words)
+	return -1
+}
+
+/**
+ * Remove word from list.
+ */
+func (s *SortedMap) remove(word string) {
+	if _, ok := s.words[word]; ok {
+		delete(s.words, word)
+	}
 }

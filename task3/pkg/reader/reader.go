@@ -13,14 +13,13 @@ import (
 type TextStructure struct {
 	text          io.Reader
 	minWordLength int
-	excludeWords  map[string]int
 }
 
 /**
  * Constructor.
  */
 func New(reader io.Reader) *TextStructure {
-	return &TextStructure{text: reader, minWordLength: 3, excludeWords: make(map[string]int)}
+	return &TextStructure{text: reader, minWordLength: 3}
 }
 
 /**
@@ -38,18 +37,16 @@ func (t *TextStructure) GetWords(count int) []string {
 		for index, word := range words {
 			// Remove word if it at the end of sentence
 			if index == 0 || index == wordsCount-1 {
-				t.UpdateExcludeList(word)
-				someList.Remove(word)
+				someList.UpdateExcludeList(word)
 				continue
 			}
 
-			if !t.isWordValid(word) {
+			if someList.IsWordExcluded(word) || !t.isWordValid(word) {
 				continue
 			}
 
 			someList.Insert(word)
 		}
-
 	}
 
 	someList.SetTopCountElements(count)
@@ -59,15 +56,17 @@ func (t *TextStructure) GetWords(count int) []string {
 /**
  * Minimal word length setter.
  */
-func (t *TextStructure) SetMinWordLength(wordLength int) {
+func (t *TextStructure) SetMinWordLength(wordLength int) *TextStructure {
 	t.minWordLength = wordLength
+
+	return t
 }
 
 /**
  * Small validation for given word.
  */
 func (t *TextStructure) isWordValid(word string) bool {
-	if utf8.RuneCountInString(word) <= t.minWordLength { // if length word less than 3 symbols
+	if utf8.RuneCountInString(word) < t.minWordLength { // if length word less than 3 symbols
 		return false
 	}
 
@@ -76,15 +75,6 @@ func (t *TextStructure) isWordValid(word string) bool {
 	}
 
 	return true
-}
-
-/**
- * Update exclude list with words.
- */
-func (t *TextStructure) UpdateExcludeList(word string) {
-	if _, ok := t.excludeWords[word]; !ok {
-		t.excludeWords[word] = 1
-	}
 }
 
 /**
@@ -104,7 +94,7 @@ func getPreparedLines(s *bufio.Scanner) []string {
 				splitLine = strings.Replace(splitLine, ".", "", 1)
 			}
 
-			lines = append(lines, strings.ToLower(splitLine))
+			lines = append(lines, strings.TrimSpace(strings.ToLower(splitLine)))
 		}
 	}
 
