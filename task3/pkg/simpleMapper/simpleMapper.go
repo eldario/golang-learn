@@ -21,8 +21,8 @@ type WordItem struct {
 /**
  * Structure constructor.
  */
-func New() *SortedMap {
-	return &SortedMap{words: make(map[string]int), excludeWords: make(map[string]int)}
+func New(count int) *SortedMap {
+	return &SortedMap{words: make(map[string]int), excludeWords: make(map[string]int), topCount: count}
 }
 
 /**
@@ -52,7 +52,10 @@ func (s *SortedMap) UpdateExcludeList(word string) {
 	if _, ok := s.excludeWords[word]; !ok {
 		s.excludeWords[word] = 1
 	}
-	s.remove(word)
+
+	if _, ok := s.words[word]; ok {
+		delete(s.words, word)
+	}
 }
 
 /**
@@ -72,7 +75,6 @@ func (s *SortedMap) GetFrequentUses() []string {
 		sortedResult []WordItem
 		result       []string
 	)
-
 	for word, count := range s.words {
 		if index := s.find(word); index != -1 {
 			sortedResult = append(sortedResult, WordItem{word, count, index})
@@ -115,13 +117,4 @@ func (s *SortedMap) find(word string) int {
 		}
 	}
 	return -1
-}
-
-/**
- * Remove word from list.
- */
-func (s *SortedMap) remove(word string) {
-	if _, ok := s.words[word]; ok {
-		delete(s.words, word)
-	}
 }

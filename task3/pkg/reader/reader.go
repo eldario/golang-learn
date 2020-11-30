@@ -6,30 +6,41 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"tasks/task3/pkg/simpleMapper"
 	"unicode/utf8"
 )
 
 type TextStructure struct {
+	mapperType
 	text          io.Reader
 	minWordLength int
+}
+
+type mapperType interface {
+	IsWordExcluded(word string) bool
+	UpdateExcludeList(word string)
+	Insert(word string)
+	GetFrequentUses() []string
 }
 
 /**
  * Constructor.
  */
-func New(reader io.Reader) *TextStructure {
-	return &TextStructure{text: reader, minWordLength: 3}
+func New(reader io.Reader, mapper mapperType, minWordLength int) *TextStructure {
+	return &TextStructure{
+		text:          reader,
+		mapperType:    mapper,
+		minWordLength: minWordLength,
+	}
 }
 
 /**
  * Work with all word from Reader.
  */
-func (t *TextStructure) GetWords(count int) []string {
+func (t *TextStructure) GetWords() []string {
 	s := bufio.NewScanner(t.text)
 	lines := getPreparedLines(s)
 
-	someList := simpleMapper.New()
+	someList := t.mapperType
 	for _, line := range lines {
 		words := strings.Split(line, " ")
 		wordsCount := len(words)
@@ -49,24 +60,14 @@ func (t *TextStructure) GetWords(count int) []string {
 		}
 	}
 
-	someList.SetTopCountElements(count)
 	return someList.GetFrequentUses()
-}
-
-/**
- * Minimal word length setter.
- */
-func (t *TextStructure) SetMinWordLength(wordLength int) *TextStructure {
-	t.minWordLength = wordLength
-
-	return t
 }
 
 /**
  * Small validation for given word.
  */
 func (t *TextStructure) isWordValid(word string) bool {
-	if utf8.RuneCountInString(word) < t.minWordLength { // if length word less than 3 symbols
+	if utf8.RuneCountInString(word) <= t.minWordLength { // if length word less than 3 symbols
 		return false
 	}
 
@@ -83,7 +84,7 @@ func (t *TextStructure) isWordValid(word string) bool {
 func getPreparedLines(s *bufio.Scanner) []string {
 	var lines []string
 	for s.Scan() {
-		line := strings.TrimSpace(regexp.MustCompile("[^a-zA-Z .]+").ReplaceAllString(s.Text(), ""))
+		line := strings.TrimSpace(regexp.MustCompile("[^a-zA-Z .0-9]+").ReplaceAllString(s.Text(), ""))
 
 		if line == "" {
 			continue

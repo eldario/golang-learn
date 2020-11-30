@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"tasks/task3/pkg/reader"
+	"tasks/task3/pkg/simpleMapper"
 )
 
 /**
@@ -25,10 +26,9 @@ func main() {
 
 	defer file.Close()
 
-	fileReader := reader.New(file).SetMinWordLength(wordLength)
+	fileReader := reader.New(file, simpleMapper.New(count), wordLength)
 
-	printInTable(fileReader.GetWords(count))
-
+	printInTable(fileReader.GetWords())
 }
 
 /**
