@@ -36,16 +36,16 @@ ID  Word    Count  Order
 
 ```json
 ID  Word    Count  Order  
-1   that    37     17     
-2   from    59     27     
-3   like    35     65     
-4   told    29     92     
-5   looked  39     111    
-6   went    62     177    
-7   love    32     235    
-8   want    29     248    
-9   into    29     256    
-10  down    29     259 
+1   like    35     67     
+2   told    29     94     
+3   looked  39     113    
+4   went    62     167    
+5   love    32     206    
+6   want    29     217    
+7   into    29     223    
+8   saw     39     269    
+9   any     23     467    
+10  got     24     517 
 ```
 
 #### Benchmarks
