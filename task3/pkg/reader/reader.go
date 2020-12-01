@@ -37,13 +37,8 @@ func (t *textStructure) Read(content string) {
 
 	if line = strings.TrimSpace(line); line != "" {
 
-		for _, line := range strings.Split(line, ". ") {
-			if strings.HasSuffix(line, ".") {
-				line = strings.Replace(line, ".", "", 1)
-			}
-
-			line = strings.TrimSpace(strings.ToLower(line))
-			t.parseLine(line)
+		for _, line := range strings.Split(line, ".") {
+			t.parseLine(strings.ToLower(strings.TrimSpace(line)))
 		}
 	}
 }
