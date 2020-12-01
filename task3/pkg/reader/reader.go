@@ -34,8 +34,8 @@ func New(mapper mapper, minWordLength int) *textStructure {
 // Read read and parse each line from the text
 func (t *textStructure) Read(content string) {
 	line := t.rgp.ReplaceAllString(content, "")
-	line = strings.TrimSpace(line)
-	if line != "" {
+
+	if line = strings.TrimSpace(line); line != "" {
 
 		for _, line := range strings.Split(line, ". ") {
 			if strings.HasSuffix(line, ".") {
@@ -75,7 +75,7 @@ func (t *textStructure) updateExcludeList(word string) {
 
 // isWordValid returns true if word is valid
 func (t *textStructure) isWordValid(word string) bool {
-	return !(utf8.RuneCountInString(word) < t.minWordLength) && !t.isWordExcluded(word)
+	return utf8.RuneCountInString(word) > t.minWordLength && !t.isWordExcluded(word)
 }
 
 // isWordExcluded returns if given word in exclude list
