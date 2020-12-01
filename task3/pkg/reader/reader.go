@@ -4,11 +4,13 @@ package reader
 import (
 	"regexp"
 	"strings"
+	"sync"
 	"unicode/utf8"
 )
 
 // textStructure internal structure of reader
 type textStructure struct {
+	itemsMutex    *sync.Mutex
 	mapper        mapper
 	minWordLength int
 	rgp           *regexp.Regexp
@@ -17,7 +19,7 @@ type textStructure struct {
 
 // mapper internal interface of mapperClass
 type mapper interface {
-	Insert(string)
+	Insert(string, uint8)
 	Remove(string)
 }
 
@@ -28,23 +30,24 @@ func New(mapper mapper, minWordLength int) *textStructure {
 		minWordLength: minWordLength,
 		rgp:           regexp.MustCompile(`[^a-zA-Z\s.0-9]+`),
 		excludeWords:  make(map[string]bool),
+		itemsMutex:    new(sync.Mutex),
 	}
 }
 
 // Read read and parse each line from the text
-func (t *textStructure) Read(content string) {
+func (t *textStructure) Read(content string, paragraphNumber uint8) {
 	line := t.rgp.ReplaceAllString(content, "")
 
 	if line = strings.TrimSpace(line); line != "" {
-
 		for _, line := range strings.Split(line, ".") {
-			t.parseLine(strings.ToLower(strings.TrimSpace(line)))
+			t.parseLine(strings.ToLower(strings.TrimSpace(line)), paragraphNumber)
 		}
 	}
+
 }
 
 // parseLine split a line to word
-func (t textStructure) parseLine(line string) {
+func (t textStructure) parseLine(line string, paragraphNumber uint8) {
 	words := strings.Split(line, " ")
 
 	wordsCount := len(words)
@@ -56,13 +59,16 @@ func (t textStructure) parseLine(line string) {
 		}
 
 		if t.isWordValid(word) {
-			t.mapper.Insert(word)
+			t.mapper.Insert(word, paragraphNumber)
 		}
 	}
 }
 
 // updateExcludeList Update exclude list with words
 func (t *textStructure) updateExcludeList(word string) {
+	t.itemsMutex.Lock()
+	defer t.itemsMutex.Unlock()
+
 	if _, ok := t.excludeWords[word]; !ok {
 		t.excludeWords[word] = true
 	}
@@ -75,6 +81,9 @@ func (t *textStructure) isWordValid(word string) bool {
 
 // isWordExcluded returns if given word in exclude list
 func (t *textStructure) isWordExcluded(word string) bool {
+	t.itemsMutex.Lock()
+	defer t.itemsMutex.Unlock()
+
 	_, ok := t.excludeWords[word]
 
 	return ok

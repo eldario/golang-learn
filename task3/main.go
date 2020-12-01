@@ -5,9 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"tasks/task3/pkg/mapper/simple"
+	"sync"
+	"tasks/task3/pkg/mapper"
 	"tasks/task3/pkg/reader"
 )
+
+type readLiner interface {
+	Read(string, uint8)
+}
 
 // main Handle method
 func main() {
@@ -25,12 +30,25 @@ func main() {
 	lineReader := reader.New(sortedMap, wordLength)
 
 	content := bufio.NewScanner(file)
+	var paragraphNumber uint8 = 0
+
+	waitGroup := new(sync.WaitGroup)
+
 	for content.Scan() {
-		lineReader.Read(content.Text())
+		waitGroup.Add(1)
+		go func(liner readLiner, content string, paragraphNumber uint8, wg *sync.WaitGroup) {
+			defer wg.Done()
+
+			liner.Read(content, paragraphNumber)
+		}(lineReader, content.Text(), paragraphNumber, waitGroup)
+
+		paragraphNumber++
 	}
 
+	waitGroup.Wait()
+
 	for _, word := range sortedMap.GetResults() {
-		fmt.Println(word.Word, word.Count)
+		fmt.Println(word.Word, word.Count, word.Order)
 	}
 }
 
