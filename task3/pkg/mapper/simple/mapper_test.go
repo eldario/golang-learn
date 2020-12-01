@@ -1,4 +1,4 @@
-package simpleMapper
+package mapper
 
 import (
 	"math/rand"
@@ -13,10 +13,18 @@ func BenchmarkInsert(b *testing.B) {
 	}
 }
 
-func BenchmarkGetFrequentUses(b *testing.B) {
+func BenchmarkRemove(b *testing.B) {
 	rand.Seed(1)
 	var data = New(10)
 	for i := 0; i < b.N; i++ {
-		data.GetFrequentUses()
+		data.Remove("foo.bar")
+	}
+}
+
+func BenchmarkGetResults(b *testing.B) {
+	rand.Seed(1)
+	var data = New(10)
+	for i := 0; i < b.N; i++ {
+		data.GetResults()
 	}
 }

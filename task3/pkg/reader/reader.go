@@ -1,103 +1,86 @@
+// Read and parse given text
 package reader
 
 import (
-	"bufio"
-	"io"
 	"regexp"
-	"strconv"
 	"strings"
 	"unicode/utf8"
 )
 
-type TextStructure struct {
-	mapperType
-	text          io.Reader
+// textStructure internal structure of reader
+type textStructure struct {
+	mapper        mapper
 	minWordLength int
+	rgp           *regexp.Regexp
+	excludeWords  map[string]bool
 }
 
-type mapperType interface {
-	IsWordExcluded(word string) bool
-	UpdateExcludeList(word string)
-	Insert(word string)
-	GetFrequentUses() []string
+// mapper internal interface of mapperClass
+type mapper interface {
+	Insert(string)
+	Remove(string)
 }
 
-/**
- * Constructor.
- */
-func New(reader io.Reader, mapper mapperType, minWordLength int) *TextStructure {
-	return &TextStructure{
-		text:          reader,
-		mapperType:    mapper,
+// New reader Constructor
+func New(mapper mapper, minWordLength int) *textStructure {
+	return &textStructure{
+		mapper:        mapper,
 		minWordLength: minWordLength,
+		rgp:           regexp.MustCompile(`[^a-zA-Z\s.0-9]+`),
+		excludeWords:  make(map[string]bool),
 	}
 }
 
-/**
- * Work with all word from Reader.
- */
-func (t *TextStructure) GetWords() []string {
-	s := bufio.NewScanner(t.text)
-	lines := getPreparedLines(s)
+// Read read and parse each line from the text
+func (t *textStructure) Read(content string) {
+	line := t.rgp.ReplaceAllString(content, "")
+	line = strings.TrimSpace(line)
+	if line != "" {
 
-	someList := t.mapperType
-	for _, line := range lines {
-		words := strings.Split(line, " ")
-		wordsCount := len(words)
-
-		for index, word := range words {
-			// Remove word if it at the end of sentence
-			if index == 0 || index == wordsCount-1 {
-				someList.UpdateExcludeList(word)
-				continue
+		for _, line := range strings.Split(line, ". ") {
+			if strings.HasSuffix(line, ".") {
+				line = strings.Replace(line, ".", "", 1)
 			}
 
-			if someList.IsWordExcluded(word) || !t.isWordValid(word) {
-				continue
-			}
-
-			someList.Insert(word)
+			line = strings.TrimSpace(strings.ToLower(line))
+			t.parseLine(line)
 		}
 	}
-
-	return someList.GetFrequentUses()
 }
 
-/**
- * Small validation for given word.
- */
-func (t *TextStructure) isWordValid(word string) bool {
-	if utf8.RuneCountInString(word) <= t.minWordLength { // if length word less than 3 symbols
-		return false
-	}
+// parseLine split a line to word
+func (t textStructure) parseLine(line string) {
+	words := strings.Split(line, " ")
 
-	if _, err := strconv.Atoi(word); err == nil {
-		return false
-	}
-
-	return true
-}
-
-/**
- * Preparing sentences from read lines.
- */
-func getPreparedLines(s *bufio.Scanner) []string {
-	var lines []string
-	for s.Scan() {
-		line := strings.TrimSpace(regexp.MustCompile("[^a-zA-Z .0-9]+").ReplaceAllString(s.Text(), ""))
-
-		if line == "" {
+	wordsCount := len(words)
+	for index, word := range words {
+		if index == 0 || index == wordsCount-1 {
+			t.updateExcludeList(word)
+			t.mapper.Remove(word)
 			continue
 		}
 
-		for _, splitLine := range strings.Split(line, ". ") {
-			if strings.HasSuffix(splitLine, ".") {
-				splitLine = strings.Replace(splitLine, ".", "", 1)
-			}
-
-			lines = append(lines, strings.TrimSpace(strings.ToLower(splitLine)))
+		if t.isWordValid(word) {
+			t.mapper.Insert(word)
 		}
 	}
+}
 
-	return lines
+// updateExcludeList Update exclude list with words
+func (t *textStructure) updateExcludeList(word string) {
+	if _, ok := t.excludeWords[word]; !ok {
+		t.excludeWords[word] = true
+	}
+}
+
+// isWordValid returns true if word is valid
+func (t *textStructure) isWordValid(word string) bool {
+	return !(utf8.RuneCountInString(word) < t.minWordLength) && !t.isWordExcluded(word)
+}
+
+// isWordExcluded returns if given word in exclude list
+func (t *textStructure) isWordExcluded(word string) bool {
+	_, ok := t.excludeWords[word]
+
+	return ok
 }

@@ -63,13 +63,18 @@ BenchmarkInsert-4                4777845               277 ns/op
 BenchmarkGetFrequentUses-4      11041116               103 ns/op
 PASS
 ok      tasks/task3/pkg/hardMapper      2.830s
-go test -bench=. ./pkg/simpleMapper
-goos: linux
-goarch: amd64
+
 pkg: tasks/task3/pkg/simpleMapper
 BenchmarkInsert-4               41022320                27.8 ns/op
 BenchmarkGetFrequentUses-4      31736749                38.0 ns/op
 PASS
 ok      tasks/task3/pkg/simpleMapper    3.387s
+
+pkg: tasks/task3/pkg/mapper/simple
+BenchmarkInsert-4               38757088                26.9 ns/op
+BenchmarkRemove-4               196112100                5.95 ns/op
+BenchmarkGetResults-4           19765978                58.9 ns/op
+PASS
+ok      tasks/task3/pkg/mapper/simple   4.094s
 
 ```
