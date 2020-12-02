@@ -9,44 +9,49 @@ import (
 // sortedMap internal structure for class
 type sortedMap struct {
 	itemsMutex *sync.Mutex
-	items      map[uint8][]string
-	words      map[string]wordItem
-	topCount   int
+	words      map[string]*wordItem
+	topCount   uint8
 }
 
 // wordItem structure of word object
 type wordItem struct {
-	Word  string
-	Count int
-	Score float32
+	Word   string
+	Count  uint32
+	line   uint32
+	column uint8
 }
 
 // New Structure constructor
-func New(topCount int) *sortedMap {
+func New(topCount uint8) *sortedMap {
 	return &sortedMap{
-		words:      make(map[string]wordItem),
+		words:      make(map[string]*wordItem),
 		topCount:   topCount,
 		itemsMutex: new(sync.Mutex),
 	}
 }
 
 // Insert a new word in words map
-func (s *sortedMap) Insert(words []string, position uint8) {
+func (s *sortedMap) Insert(words []string, position uint32) {
 	s.itemsMutex.Lock()
 	defer s.itemsMutex.Unlock()
 
-	for index, word := range words {
-		score := float32(position) + float32(index+1)/1000
+	for wordIndex, word := range words {
 		if _, ok := s.words[word]; !ok {
-			s.words[word] = wordItem{word, 0, score}
+			s.words[word] = &wordItem{
+				word,
+				0,
+				position,
+				uint8(wordIndex),
+			}
 		}
-		w := s.words[word]
-		w.Count++
-		if w.Score > score {
-			w.Score = score
+		currentWord := s.words[word]
+		currentWord.Count++
+		if currentWord.line > position {
+			currentWord.line = position
+			currentWord.column = uint8(wordIndex)
 		}
 
-		s.words[word] = w
+		s.words[word] = currentWord
 	}
 
 }
@@ -66,22 +71,22 @@ func (s *sortedMap) GetResults() []wordItem {
 	var sortedResult []wordItem
 
 	for _, word := range s.words {
-		sortedResult = append(sortedResult, word)
+		sortedResult = append(sortedResult, *word)
 	}
 
 	sort.Slice(sortedResult, func(i, j int) bool {
 		if sortedResult[i].Count == sortedResult[j].Count {
-			return sortedResult[i].Score < sortedResult[j].Score
+			return sortedResult[i].line < sortedResult[j].line
 		}
 		return sortedResult[i].Count > sortedResult[j].Count
 	})
 
-	if len(sortedResult) >= s.topCount {
+	if len(sortedResult) >= int(s.topCount) {
 		sortedResult = sortedResult[:s.topCount]
 	}
 
 	sort.Slice(sortedResult, func(i, j int) bool {
-		return sortedResult[i].Score < sortedResult[j].Score
+		return sortedResult[i].line < sortedResult[j].line
 	})
 
 	return sortedResult
