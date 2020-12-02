@@ -9,8 +9,8 @@ import (
 // sortedMap internal structure for class
 type sortedMap struct {
 	itemsMutex *sync.Mutex
-	items      map[string]uint8
-	words      map[string]int
+	items      map[uint8][]string
+	words      map[string]wordItem
 	topCount   int
 }
 
@@ -18,39 +18,37 @@ type sortedMap struct {
 type wordItem struct {
 	Word  string
 	Count int
-	Order uint8
+	Score float32
 }
 
 // New Structure constructor
 func New(topCount int) *sortedMap {
 	return &sortedMap{
-		items:      make(map[string]uint8),
-		words:      make(map[string]int),
+		words:      make(map[string]wordItem),
 		topCount:   topCount,
 		itemsMutex: new(sync.Mutex),
 	}
 }
 
 // Insert a new word in words map
-func (s *sortedMap) Insert(word string, position uint8) {
+func (s *sortedMap) Insert(words []string, position uint8) {
 	s.itemsMutex.Lock()
 	defer s.itemsMutex.Unlock()
 
-	if _, ok := s.words[word]; !ok {
-		s.words[word] = 0
+	for index, word := range words {
+		score := float32(position) + float32(index+1)/1000
+		if _, ok := s.words[word]; !ok {
+			s.words[word] = wordItem{word, 0, score}
+		}
+		w := s.words[word]
+		w.Count++
+		if w.Score > score {
+			w.Score = score
+		}
+
+		s.words[word] = w
 	}
 
-
-	if _, ok := s.items[word]; !ok {
-		s.items[word] = 0
-	}
-	s.items[word]++
-
-	if order := s.items[word]; order > position {
-		s.items[word] = position
-	}
-
-	s.words[word]++
 }
 
 // Remove a word from words map
@@ -66,14 +64,14 @@ func (s *sortedMap) Remove(word string) {
 // GetResults Get frequently used words in text
 func (s *sortedMap) GetResults() []wordItem {
 	var sortedResult []wordItem
-	for word, index := range s.items {
-		count := s.words[word]
-		sortedResult = append(sortedResult, wordItem{word, count, index})
+
+	for _, word := range s.words {
+		sortedResult = append(sortedResult, word)
 	}
 
 	sort.Slice(sortedResult, func(i, j int) bool {
 		if sortedResult[i].Count == sortedResult[j].Count {
-			return sortedResult[i].Order < sortedResult[j].Order
+			return sortedResult[i].Score < sortedResult[j].Score
 		}
 		return sortedResult[i].Count > sortedResult[j].Count
 	})
@@ -83,7 +81,7 @@ func (s *sortedMap) GetResults() []wordItem {
 	}
 
 	sort.Slice(sortedResult, func(i, j int) bool {
-		return sortedResult[i].Order < sortedResult[j].Order
+		return sortedResult[i].Score < sortedResult[j].Score
 	})
 
 	return sortedResult

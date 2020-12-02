@@ -30,7 +30,7 @@ func main() {
 	lineReader := reader.New(sortedMap, wordLength)
 
 	content := bufio.NewScanner(file)
-	var paragraphNumber uint8 = 0
+	var paragraphNumber uint8 = 1
 
 	waitGroup := new(sync.WaitGroup)
 
@@ -48,7 +48,7 @@ func main() {
 	waitGroup.Wait()
 
 	for _, word := range sortedMap.GetResults() {
-		fmt.Println(word.Word, word.Count, word.Order)
+		fmt.Println(word.Word, word.Count, word.Score)
 	}
 }
 

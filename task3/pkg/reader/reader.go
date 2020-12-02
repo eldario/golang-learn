@@ -19,7 +19,7 @@ type textStructure struct {
 
 // mapper internal interface of mapperClass
 type mapper interface {
-	Insert(string, uint8)
+	Insert([]string, uint8)
 	Remove(string)
 }
 
@@ -49,6 +49,7 @@ func (t *textStructure) Read(content string, paragraphNumber uint8) {
 // parseLine split a line to word
 func (t textStructure) parseLine(line string, paragraphNumber uint8) {
 	words := strings.Split(line, " ")
+	var resultWords []string
 
 	wordsCount := len(words)
 	for index, word := range words {
@@ -59,9 +60,11 @@ func (t textStructure) parseLine(line string, paragraphNumber uint8) {
 		}
 
 		if t.isWordValid(word) {
-			t.mapper.Insert(word, paragraphNumber)
+			resultWords = append(resultWords, word)
 		}
 	}
+
+	t.mapper.Insert(resultWords, paragraphNumber)
 }
 
 // updateExcludeList Update exclude list with words
