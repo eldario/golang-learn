@@ -8,7 +8,7 @@ import (
 
 // sortedMap internal structure for class
 type sortedMap struct {
-	itemsMutex *sync.Mutex
+	itemsMutex sync.Mutex
 	words      map[string]*wordItem
 	topCount   uint
 }
@@ -26,7 +26,6 @@ func New(topCount uint) *sortedMap {
 	return &sortedMap{
 		words:      make(map[string]*wordItem),
 		topCount:   topCount,
-		itemsMutex: new(sync.Mutex),
 	}
 }
 

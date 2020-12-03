@@ -10,7 +10,7 @@ import (
 
 // textStructure internal structure of reader
 type textStructure struct {
-	itemsMutex    *sync.Mutex
+	itemsMutex    sync.Mutex
 	mapper        mapper
 	minWordLength int
 	rgp           *regexp.Regexp
@@ -30,7 +30,6 @@ func New(mapper mapper, minWordLength int) *textStructure {
 		minWordLength: minWordLength,
 		rgp:           regexp.MustCompile(`[^a-zA-Z\s.0-9]+`),
 		excludeWords:  make(map[string]bool),
-		itemsMutex:    new(sync.Mutex),
 	}
 }
 
