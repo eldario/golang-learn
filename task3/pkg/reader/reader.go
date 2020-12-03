@@ -50,7 +50,7 @@ func (t *textStructure) Read(content string, paragraphNumber uint32) {
 }
 
 // parseLine split a line to word
-func (t textStructure) parseLine(line string, resultWords *[]string) {
+func (t *textStructure) parseLine(line string, resultWords *[]string) {
 	words := strings.Split(line, " ")
 
 	wordsCount := len(words)

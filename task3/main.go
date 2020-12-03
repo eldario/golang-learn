@@ -26,23 +26,30 @@ func main() {
 
 	defer file.Close()
 
-	sortedMap := mapper.New(uint8(count))
+	sortedMap := mapper.New(count)
 	lineReader := reader.New(sortedMap, wordLength)
 
 	content := bufio.NewScanner(file)
 	var paragraphNumber uint32
 
-	waitGroup := new(sync.WaitGroup)
+	out := make(chan struct{}, 3)
+
+	var waitGroup sync.WaitGroup
 
 	for content.Scan() {
 		waitGroup.Add(1)
+		out <- struct{}{}
+
 		paragraphNumber++
-		go func(liner readLiner, content string, paragraphNumber uint32, wg *sync.WaitGroup) {
-			defer wg.Done()
+
+		go func(liner readLiner, content string, paragraphNumber uint32) {
+
+			defer waitGroup.Done()
 
 			liner.Read(content, paragraphNumber)
-		}(lineReader, content.Text(), paragraphNumber, waitGroup)
 
+			<-out
+		}(lineReader, content.Text(), paragraphNumber)
 	}
 
 	waitGroup.Wait()

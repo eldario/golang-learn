@@ -10,7 +10,7 @@ import (
 type sortedMap struct {
 	itemsMutex *sync.Mutex
 	words      map[string]*wordItem
-	topCount   uint8
+	topCount   uint
 }
 
 // wordItem structure of word object
@@ -18,11 +18,11 @@ type wordItem struct {
 	Word   string
 	Count  uint32
 	line   uint32
-	column uint8
+	column int
 }
 
 // New Structure constructor
-func New(topCount uint8) *sortedMap {
+func New(topCount uint) *sortedMap {
 	return &sortedMap{
 		words:      make(map[string]*wordItem),
 		topCount:   topCount,
@@ -41,14 +41,14 @@ func (s *sortedMap) Insert(words []string, position uint32) {
 				word,
 				0,
 				position,
-				uint8(wordIndex),
+				wordIndex,
 			}
 		}
 		currentWord := s.words[word]
 		currentWord.Count++
 		if currentWord.line > position {
 			currentWord.line = position
-			currentWord.column = uint8(wordIndex)
+			currentWord.column = wordIndex
 		}
 
 		s.words[word] = currentWord
