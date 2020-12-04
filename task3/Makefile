@@ -14,7 +14,7 @@ test: ### Run tests
 	go test ./pkg
 
 bench: ### Bench tests
-	go test -bench=. ./pkg/mapper/simple/
+	go test -bench=. ./pkg/mapper/
 
 lint: ## Lint
 	 golangci-lint run
