@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"tasks/task4/pkg/buffered"
 	"tasks/task4/pkg/fan/in"
 	"tasks/task4/pkg/fan/out"
 	"tasks/task4/pkg/pipe"
@@ -12,6 +13,7 @@ func main() {
 	runPipePacket()
 	runFanInPacket()
 	runFanOutPacket()
+	runBufferedChan()
 }
 
 // runPipePacket try to run pipe packet
@@ -94,4 +96,24 @@ func runFanOutPacket() {
 			}
 		}
 	}
+}
+
+// runBufferedChan try to run buffered packet
+func runBufferedChan() {
+	inChannel := make(chan string)
+
+	go func() {
+		defer close(inChannel)
+
+		for i := 0; i < 10; i++ {
+			inChannel <- fmt.Sprintf("IndexWord[%d]", i)
+		}
+	}()
+
+	outChannel := buffered.NewChan(inChannel, 4)
+
+	for value := range outChannel {
+		fmt.Println("Value:", value)
+	}
+
 }
