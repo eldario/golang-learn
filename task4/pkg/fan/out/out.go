@@ -1,23 +1,48 @@
 package out
 
-import "sync"
+import (
+	"context"
+	"fmt"
+)
 
-// NewFanOut get from one channel and send it to channels list
-func NewFanOut(inChannel <-chan string, outChannels []chan string) {
-	var waitGroup sync.WaitGroup
+// fanOut main struct
+type fanOut struct {
+	ctx         context.Context
+	inChannel   chan string
+	OutChannels []chan string
+}
 
-	for value := range inChannel {
-		waitGroup.Add(1)
-		go func(value string, outChannels []chan string) {
-			defer waitGroup.Done()
+// New Constructor of fanOut packet
+func New(ctx context.Context, inChannel chan string, outChannels []chan string) *fanOut {
+	return &fanOut{
+		ctx:         ctx,
+		inChannel:   inChannel,
+		OutChannels: outChannels,
+	}
+}
 
-			for _, channel := range outChannels {
+// Run get from one channel and send it to channels list
+func (f *fanOut) Run() {
+	for {
+		select {
+		case <-f.ctx.Done():
+			fmt.Println("Run: Time to return")
+			return
+		case value, ok := <-f.inChannel:
+			if !ok {
+				return
+			}
+			for _, channel := range f.OutChannels {
 				channel <- value
 			}
-		}(value, outChannels)
-	}
+		}
 
-	waitGroup.Wait()
+	}
+}
+
+// Add new channel in list
+func (f *fanOut) Add(channel chan string) {
+	f.OutChannels = append(f.OutChannels, channel)
 }
 
 // InsertWordInChannel insert a new word in channel

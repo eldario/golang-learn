@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"tasks/task4/pkg/buffered"
 	"tasks/task4/pkg/fan/in"
@@ -18,22 +19,30 @@ func main() {
 
 // runPipePacket try to run pipe packet
 func runPipePacket() {
-	firstChannel := make(chan string)
-
-	pipe.FillValues([]string{"foo", "fooBar", "test", "Hello", "Winter"}, firstChannel)
-
+	inChannel := make(chan string)
+	outChannel := make(chan string)
 	format := func(str string) string {
 		return fmt.Sprintf("Length of the word [%s] is %d", str, len(str))
 	}
+	ctx := context.Background()
+	ctxWithCancel, cancelFunction := context.WithCancel(ctx)
 
-	secondChannel := make(chan string)
-	go func() {
-		defer close(secondChannel)
-
-		pipe.NewPipe(firstChannel, secondChannel, format)
+	defer func() {
+		fmt.Println("Call cancel function")
+		cancelFunction()
 	}()
 
-	for value := range secondChannel {
+	p := pipe.New(ctxWithCancel, inChannel, outChannel, format)
+
+	p.FillValues([]string{"foo", "fooBar", "test", "Hello", "Winter"})
+
+	go func() {
+		defer close(outChannel)
+
+		p.Run()
+	}()
+
+	for value := range outChannel {
 		fmt.Println("Response:", value)
 	}
 }
@@ -49,18 +58,28 @@ func runFanInPacket() {
 		{"thirteenth", "fourteenth", "fifteenth"},
 	}
 
-	for _, words := range wordsList {
-		channel := in.GenerateChannel(words)
-		channelList = append(channelList, channel)
-	}
+	ctx := context.Background()
+	ctxWithCancel, cancelFunction := context.WithCancel(ctx)
 
-	secondChannel := make(chan string)
-	go func() {
-		defer close(secondChannel)
-		in.NewFanIn(channelList, secondChannel)
+	defer func() {
+		fmt.Println("Call cancel function")
+		cancelFunction()
 	}()
 
-	for value := range secondChannel {
+	outChannel := make(chan string)
+	fanIn := in.New(ctxWithCancel, channelList, outChannel)
+
+	for _, words := range wordsList {
+		channel := in.GenerateChannel(words)
+		fanIn.Add(channel)
+	}
+
+	go func() {
+		defer close(outChannel)
+		fanIn.Run()
+	}()
+
+	for value := range outChannel {
 		fmt.Println("Value:", value)
 	}
 }
@@ -68,25 +87,36 @@ func runFanInPacket() {
 // runFanOutPacket try to run fanOut packet
 func runFanOutPacket() {
 	var channelList []chan string
-	for i := 0; i < 3; i++ {
-		channelList = append(channelList, make(chan string))
-	}
+
+	ctx := context.Background()
+	ctxWithCancel, cancelFunction := context.WithCancel(ctx)
+
+	defer func() {
+		fmt.Println("Call cancel function")
+		cancelFunction()
+	}()
 
 	inChannel := make(chan string)
+	fanOut := out.New(ctxWithCancel, inChannel, channelList)
+
+	for i := 0; i < 3; i++ {
+		fanOut.Add(make(chan string))
+	}
+
 	out.InsertWordInChannel([]string{"foo", "fooBar", "test", "Hello", "Winter"}, inChannel)
 
 	go func() {
 		defer func() {
-			for _, channel := range channelList {
+			for _, channel := range fanOut.OutChannels {
 				close(channel)
 			}
 		}()
 
-		out.NewFanOut(inChannel, channelList)
+		fanOut.Run()
 	}()
 
 	for {
-		for index, channel := range channelList {
+		for index, channel := range fanOut.OutChannels {
 			select {
 			case value, ok := <-channel:
 				if !ok {
@@ -110,9 +140,21 @@ func runBufferedChan() {
 		}
 	}()
 
-	outChannel := buffered.NewChan(inChannel, 4)
+	ctx := context.Background()
+	ctxWithCancel, cancelFunction := context.WithCancel(ctx)
 
-	for value := range outChannel {
+	defer func() {
+		fmt.Println("Call cancel function")
+		cancelFunction()
+	}()
+
+	bufferedChan := buffered.New(ctxWithCancel, inChannel, 1)
+
+	go func() {
+		bufferedChan.Run()
+	}()
+
+	for value := range bufferedChan.OutChannel {
 		fmt.Println("Value:", value)
 	}
 

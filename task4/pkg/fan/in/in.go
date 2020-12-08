@@ -1,23 +1,47 @@
 package in
 
-import "sync"
+import (
+	"context"
+	"fmt"
+)
 
-// NewFanIn get all list of channels, collect data and send it out
-func NewFanIn(channels []<-chan string, out chan string) {
-	var waitGroup sync.WaitGroup
+// fanIn main struct
+type fanIn struct {
+	ctx          context.Context
+	channelsList []<-chan string
+	outChannel   chan string
+}
 
-	waitGroup.Add(len(channels))
-	for _, channel := range channels {
-		go func(channel <-chan string) {
-			defer waitGroup.Done()
-
-			for word := range channel {
-				out <- word
-			}
-		}(channel)
+// New Constructor of fanIn packet
+func New(ctx context.Context, channelsList []<-chan string, outChannel chan string) *fanIn {
+	return &fanIn{
+		ctx:          ctx,
+		channelsList: channelsList,
+		outChannel:   outChannel,
 	}
+}
 
-	waitGroup.Wait()
+// Run get all list of channels, collect data and send it out
+func (f *fanIn) Run() {
+	for {
+		for _, channel := range f.channelsList {
+			select {
+			case <-f.ctx.Done():
+				fmt.Println("Run: Time to return")
+				return
+			case value, ok := <-channel:
+				if !ok {
+					return
+				}
+				f.outChannel <- value
+			}
+		}
+	}
+}
+
+// Add new channel in list
+func (f *fanIn) Add(channel <-chan string) {
+	f.channelsList = append(f.channelsList, channel)
 }
 
 // GenerateChannel put words in generated channel and return it
@@ -26,12 +50,11 @@ func GenerateChannel(words []string) <-chan string {
 
 	go func() {
 		defer close(outChannel)
-		
+
 		for _, word := range words {
 			outChannel <- word
 		}
 	}()
 
 	return outChannel
-
 }

@@ -1,21 +1,40 @@
 package buffered
 
-// NewChan put values into the channel that fit
-func NewChan(inChannel <-chan string, bufferSize int) <-chan string {
-	outChannel := make(chan string, bufferSize)
+import (
+	"context"
+	"fmt"
+)
 
-	go func(bufferSize int) {
-		defer close(outChannel)
+// bufferedChan structure for bufferedChan packet
+type bufferedChan struct {
+	ctx        context.Context
+	inChannel  <-chan string
+	bufferSize int
+	OutChannel chan string
+}
 
-		var count = 0
-		for word := range inChannel {
-			if count == bufferSize {
-				return
-			}
-			outChannel <- word
-			count++
+// New Constructor
+func New(ctx context.Context, inChannel <-chan string, bufferSize int) *bufferedChan {
+	return &bufferedChan{
+		ctx:        ctx,
+		inChannel:  inChannel,
+		bufferSize: bufferSize,
+		OutChannel: make(chan string, bufferSize),
+	}
+}
+
+// Run put values into the channel that fit
+func (b *bufferedChan) Run() {
+	defer close(b.OutChannel)
+	for value := range b.inChannel {
+		select {
+		case <-b.ctx.Done():
+			fmt.Println("Run: Time to return")
+			return
+		case b.OutChannel <- value:
+		default:
+			return
 		}
-	}(bufferSize)
+	}
 
-	return outChannel
 }
