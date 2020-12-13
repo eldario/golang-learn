@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 	"strconv"
 )
 
@@ -43,6 +44,20 @@ func stat(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
+	go func() {
+		createPprofServer()
+	}()
+
+	createServer()
+}
+
+func createPprofServer() {
+	server := &http.Server{Addr: ":6060", Handler: nil}
+
+	log.Fatal(server.ListenAndServe())
+}
+
+func createServer() {
 	r := mux.NewRouter()
 	r.HandleFunc("/text", text)
 	r.HandleFunc("/stat/{number}", stat)
