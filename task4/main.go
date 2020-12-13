@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"tasks/task4/pkg/buffered"
-	"tasks/task4/pkg/fan/in"
-	"tasks/task4/pkg/fan/out"
-	"tasks/task4/pkg/pipe"
+	"github.com/eldario/schannels/buffered"
+	"github.com/eldario/schannels/fan/in"
+	"github.com/eldario/schannels/fan/out"
+
+	"github.com/eldario/schannels/pipe"
 )
 
 // main Handle
