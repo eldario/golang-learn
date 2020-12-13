@@ -54,6 +54,10 @@ github.com/denis-tingajkin/go-header v0.3.1 h1:ymEpSiFjeItCy1FOP+x0M2KdCELdEAHUs
 github.com/denis-tingajkin/go-header v0.3.1/go.mod h1:sq/2IxMhaZX+RRcgHfCRx/m0M5na0fBt4/CRe7Lrji0=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
+github.com/eldario/golang-learn v0.0.0-20201204040112-b00d75c441b3 h1:81tvf9kq5UG4KUkt5UCQ2GknTDUiJIqqfyQzyVfHF/o=
+github.com/eldario/schannels v0.0.0-20201210182751-de082886e622 h1:lfwqXf7z96l8E9n563CTLzBH0hVBbyQK5WU9Hc2jrQE=
+github.com/eldario/schannels v0.0.1 h1:LMElM2B2eNb5elEV5BeF4rpfqA5XcuH92tutXlRw5OI=
+github.com/eldario/schannels v0.0.1/go.mod h1:t9XEdJf1wewBvgYTKNyOxQurJgKsImUo7K+QnQ/SskE=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
 github.com/fatih/color v1.10.0 h1:s36xzo75JdqLaaWoiEHk767eHiwo0598uUxyfiPkDsg=
