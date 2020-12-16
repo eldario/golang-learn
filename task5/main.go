@@ -1,66 +1,35 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/eldario/smap/mapper"
-	"github.com/eldario/smap/reader"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
-	"strconv"
+	"tasks/task5/handlers"
 )
 
-type textOptions struct {
-	Number int
-	Text   string
-}
-
-var sortedMap = mapper.New()
-
-func text(writer http.ResponseWriter, request *http.Request) {
-	var t textOptions
-
-	err := json.NewDecoder(request.Body).Decode(&t)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	lineReader := reader.New(sortedMap, 3)
-
-	lineReader.Read(t.Text, t.Number)
-}
-
-func stat(writer http.ResponseWriter, request *http.Request) {
-	vars := mux.Vars(request)
-	number, _ := strconv.Atoi(vars["number"])
-
-	sortedMap.SetTopCount(number)
-	for _, word := range sortedMap.GetResults() {
-		fmt.Fprintf(writer, "%s - count: %d \n", word.Word, word.Count)
-	}
-}
-
 func main() {
-	go func() {
-		createPprofServer()
-	}()
+	//go func() {
+	//	createPprofServer()
+	//}()
 
 	createServer()
 }
 
 func createPprofServer() {
 	server := &http.Server{Addr: ":6060", Handler: nil}
+	defer server.Close()
 
 	log.Fatal(server.ListenAndServe())
 }
 
 func createServer() {
-	r := mux.NewRouter()
-	r.HandleFunc("/text", text)
-	r.HandleFunc("/stat/{number}", stat)
+	newMap := new(handlers.Mappa)
 
-	log.Fatal(http.ListenAndServe(":4000", r))
+	r := mux.NewRouter()
+	r.HandleFunc("/text", newMap.Text)
+	r.HandleFunc("/stat/{number}", newMap.Stat)
+	r.HandleFunc("/test", newMap.Test)
+
+	log.Fatal(http.ListenAndServe(":4001", r))
 }
