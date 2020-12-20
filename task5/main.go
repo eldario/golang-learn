@@ -7,8 +7,10 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"runtime"
 	"runtime/pprof"
 	"tasks/task5/handlers/stat"
+	"tasks/task5/handlers/stop"
 	"tasks/task5/handlers/text"
 
 	"github.com/gorilla/mux"
@@ -23,24 +25,34 @@ func main() {
 }
 
 func createPprofServer() {
-	server := &http.Server{Addr: ":6060", Handler: nil}
-	defer server.Close()
+	var (
+		cpuProfile = "cpu.prof"
+		memProfile = "mem.prof"
+	)
 
-	var pProfFileName = "cpu.prof"
-	pProfFile, err := os.Create(pProfFileName)
-	if err != nil {
-		log.Fatal("Cant create cpu prof file: ", err)
+	{
+		f, err := os.Create(cpuProfile)
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		defer f.Close() // error handling omitted for example
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
 	}
 
-	defer pProfFile.Close()
-
-	if err := pprof.StartCPUProfile(pProfFile); err != nil {
-		log.Fatal("Cant start profile: ", err)
+	{
+		f, err := os.Create(memProfile)
+		if err != nil {
+			log.Fatal("could not create memory profile: ", err)
+		}
+		defer f.Close()
+		runtime.GC()
+		if err := pprof.WriteHeapProfile(f); err != nil {
+			log.Fatal("could not write memory profile: ", err)
+		}
 	}
-
-	defer pprof.StopCPUProfile()
-
-	log.Fatal(server.ListenAndServe())
 }
 
 func createServer() {
@@ -50,7 +62,7 @@ func createServer() {
 	r := mux.NewRouter()
 	r.Handle("/text", text.New(lineReader))
 	r.Handle("/stat/{number}", stat.New(sortedMap))
-	//r.Handle("/test", textHandler)
+	r.Handle("/stop", stop.New())
 
 	log.Fatal(http.ListenAndServe(":4001", r))
 }
