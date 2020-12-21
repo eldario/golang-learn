@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	counters "tasks/task5/handlers"
 )
 
 type sortedMap interface {
@@ -18,9 +19,11 @@ type sortedMap interface {
 
 type Handler struct {
 	sortedMap sortedMap
+	counter   *counters.Metric
 }
 
 func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	h.counter.Calls.Inc()
 	vars := mux.Vars(request)
 	number, _ := strconv.Atoi(vars["number"])
 	h.sortedMap.SetTopCount(number)
@@ -43,5 +46,7 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 }
 
 func New(mapper sortedMap) *Handler {
-	return &Handler{sortedMap: mapper}
+	var counter = counters.New("stat", "stat_func_calls")
+
+	return &Handler{sortedMap: mapper, counter: counter}
 }

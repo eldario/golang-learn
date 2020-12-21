@@ -3,6 +3,7 @@ package text
 import (
 	"encoding/json"
 	"net/http"
+	counters "tasks/task5/handlers"
 )
 
 type readLiner interface {
@@ -11,6 +12,7 @@ type readLiner interface {
 
 type Handler struct {
 	lineReader readLiner
+	counter    *counters.Metric
 }
 
 type payload struct {
@@ -19,6 +21,7 @@ type payload struct {
 }
 
 func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	h.counter.Calls.Inc()
 	p := payload{}
 
 	defer request.Body.Close()
@@ -50,5 +53,8 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 }
 
 func New(lineReader readLiner) *Handler {
-	return &Handler{lineReader: lineReader}
+
+	var counter = counters.New("text", "text_func_calls")
+
+	return &Handler{lineReader: lineReader, counter: counter}
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/eldario/smap/mapper"
 	"github.com/eldario/smap/reader"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -20,6 +21,10 @@ func main() {
 	go func() {
 		createPprofServer()
 	}()
+	// for go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30
+	//go func() {
+	//	log.Println(http.ListenAndServe("localhost:6060", nil))
+	//}()
 
 	createServer()
 }
@@ -62,6 +67,8 @@ func createServer() {
 	r := mux.NewRouter()
 	r.Handle("/text", text.New(lineReader))
 	r.Handle("/stat/{number}", stat.New(sortedMap))
+	r.Handle("/metrics", promhttp.Handler())
+	//r.Handle("/metrics", metrics.New())
 	r.Handle("/stop", stop.New())
 
 	log.Fatal(http.ListenAndServe(":4001", r))
