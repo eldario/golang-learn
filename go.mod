@@ -3,7 +3,9 @@ module tasks
 go 1.15
 
 require (
-	github.com/fatih/color v1.10.0
-	github.com/golangci/golangci-lint v1.32.2 // indirect
-	github.com/rodaine/table v1.0.1
+	github.com/eldario/smap v0.0.4-0.20201217110818-920124ffa922
+	github.com/gorilla/mux v1.8.0
+	github.com/prometheus/client_golang v1.9.0
+	github.com/prometheus/client_model v0.2.0
+	github.com/prometheus/common v0.15.0
 )
