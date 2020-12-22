@@ -18,9 +18,11 @@ import (
 )
 
 func main() {
-	go func() {
-		createPprofServer()
-	}()
+	if err := createPprofServer(); err == nil {
+		defer func() {
+			pprof.StopCPUProfile()
+		}()
+	}
 	// for go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30
 	//go func() {
 	//	log.Println(http.ListenAndServe("localhost:6060", nil))
@@ -29,7 +31,7 @@ func main() {
 	createServer()
 }
 
-func createPprofServer() {
+func createPprofServer() error {
 	var (
 		cpuProfile = "cpu.prof"
 		memProfile = "mem.prof"
@@ -40,11 +42,15 @@ func createPprofServer() {
 		if err != nil {
 			log.Fatal("could not create CPU profile: ", err)
 		}
-		defer f.Close() // error handling omitted for example
+
+		//defer func() {
+		//	_ = f.Close() // error handling omitted for example
+		//}()
+
 		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("could not start CPU profile: ", err)
+			log.Println("could not start CPU profile: ", err)
+			return err
 		}
-		defer pprof.StopCPUProfile()
 	}
 
 	{
@@ -52,12 +58,19 @@ func createPprofServer() {
 		if err != nil {
 			log.Fatal("could not create memory profile: ", err)
 		}
-		defer f.Close()
+
+		//defer func() {
+		//	_ = f.Close() // error handling omitted for example
+		//}()
+
 		runtime.GC()
 		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Fatal("could not write memory profile: ", err)
+			log.Println("could not write memory profile: ", err)
+			return err
 		}
 	}
+
+	return nil
 }
 
 func createServer() {
@@ -68,7 +81,6 @@ func createServer() {
 	r.Handle("/text", text.New(lineReader))
 	r.Handle("/stat/{number}", stat.New(sortedMap))
 	r.Handle("/metrics", promhttp.Handler())
-	//r.Handle("/metrics", metrics.New())
 	r.Handle("/stop", stop.New())
 
 	log.Fatal(http.ListenAndServe(":4001", r))

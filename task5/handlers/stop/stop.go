@@ -6,21 +6,26 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"time"
 )
 
 type Handler struct{}
 
-func (Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+func (Handler) ServeHTTP(http.ResponseWriter, *http.Request) {
 	var srv http.Server
 
 	idleConnsClosed := make(chan struct{})
 	go func() {
+		dur, _ := time.ParseDuration("5sec")
+		ctx, ctxCancel := context.WithTimeout(context.Background(), dur)
+		defer ctxCancel()
+
 		sigint := make(chan os.Signal, 1)
 		signal.Notify(sigint, os.Interrupt)
 		<-sigint
 
 		// We received an interrupt signal, shut down.
-		if err := srv.Shutdown(context.Background()); err != nil {
+		if err := srv.Shutdown(ctx); err != nil {
 			// Error from closing listeners, or context timeout:
 			log.Printf("HTTP server Shutdown: %v", err)
 		}

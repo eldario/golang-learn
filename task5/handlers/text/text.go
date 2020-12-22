@@ -2,8 +2,9 @@ package text
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
-	counters "tasks/task5/handlers"
+	"tasks/task5/counters"
 )
 
 type readLiner interface {
@@ -24,7 +25,9 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	h.counter.Calls.Inc()
 	p := payload{}
 
-	defer request.Body.Close()
+	defer func() {
+		_ = request.Body.Close()
+	}()
 
 	err := json.NewDecoder(request.Body).Decode(&p)
 	if err != nil {
@@ -49,11 +52,12 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
-	writer.Write(jsonData)
+	if _, err := writer.Write(jsonData); err != nil {
+		log.Println(err)
+	}
 }
 
 func New(lineReader readLiner) *Handler {
-
 	var counter = counters.New("text", "text_func_calls")
 
 	return &Handler{lineReader: lineReader, counter: counter}

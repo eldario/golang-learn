@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	counters "tasks/task5/handlers"
+	"tasks/task5/counters"
 )
 
 type sortedMap interface {
@@ -31,7 +31,9 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	var jsonData []byte
 	result := h.sortedMap.GetResults()
 	if len(result) == 0 {
-		writer.Write([]byte(`Use endpoint /text firstly`))
+		if _, err := writer.Write([]byte(`Use endpoint /text firstly`)); err != nil {
+			log.Println(err)
+		}
 		return
 	}
 
@@ -42,11 +44,13 @@ func (h *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
-	writer.Write(jsonData)
+	if _, err := writer.Write(jsonData); err != nil {
+		log.Println(err)
+	}
 }
 
-func New(mapper sortedMap) *Handler {
+func New(sortedMap sortedMap) *Handler {
 	var counter = counters.New("stat", "stat_func_calls")
 
-	return &Handler{sortedMap: mapper, counter: counter}
+	return &Handler{sortedMap: sortedMap, counter: counter}
 }
